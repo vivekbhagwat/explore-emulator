@@ -1,8 +1,10 @@
 explore-emulator
 ================
 
-An emulator of the foursquare explore function (without using the Explore API)
+An emulator of the foursquare explore function (without using the Explore API). Group sign-in required.
 
-secret.txt is a two-line file with the following format:
-  CLIENT ID
-  CLIENT SECRET
+secret.py is a python file with definitions for the following variables: 
+client_id
+client_secret
+code (from authentication with foursquare)
+oauth
