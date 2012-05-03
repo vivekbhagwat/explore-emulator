@@ -4,33 +4,35 @@ import secret
 import time
 import numpy as np
 
-# response = urllib2.urlopen('https://foursquare.com/oauth2/authenticate?client_id=' + secret.client_id )
-
-# print response.read()
-
 class Foursquare:
 	"""docstring for Foursquare"""
 	def __init__(self):
 		# super(Foursquare, self).__init__()
-		self.feature_vector = np.array([])
-		self.feature_dict = {}
-			
+		self.feature_vector = np.array([0])
+        self.feature_weights = np.array([1.0])
+        self.feature_dict = {'popular' : 0}
+        self.oauth_token = secret.oauth_token
 
-	def get_venues_nearby():
-		lat = raw_input('What is your latitude? (e.g. 40.799921) ')
+        self.lat, self.lng = self.get_location()
+		
+    def get_location(self):
+	    lat = raw_input('What is your latitude? (e.g. 40.799921) ')
 		lng = raw_input('What is your longitude? (e.g. -73.96831) ')
 		lat = str(float(lat)) if lat != '' else '40.799921'
-		lng = str(float(lng)) if lng is not '' else '-73.96831'
+        lng = str(float(lng)) if lng is not '' else '-73.96831'
 
-		query = raw_input('Would you like to look for something in particular? (if not just press enter) ')
+        return lat, lng
+
+	def get_venues_nearby():
+		#query = raw_input('Would you like to look for something in particular? (if not just press enter) ')
 
 		# print 'Getting ' + ((query + '-related ') if query else '') + 'venues near ' + lat + ', ' + lng + '...'
 
 		url = 'https://api.foursquare.com/v2/venues/search'
-		url += '?ll='+lat+','+lng
-		url += '&query='+query if query else ''
+		url += '?ll='+self.lat+','+self.lng
+		#url += '&query='+query if query else ''
 		url += '&limit=50'
-		url += '&oauth_token='+secret.oauth_token+'&v=20120422'
+		url += '&oauth_token='+self.oauth_token+'&v=20120422'
 		# print url
 		response = urllib2.urlopen(url)
 		html = response.read()
@@ -56,6 +58,7 @@ class Foursquare:
 		return venues
 
 
+    #train
 	def get_checkin_history(self):
 		venues_list = []
 		offset = 0
@@ -63,7 +66,7 @@ class Foursquare:
 
 		while True:
 			url = 'https://api.foursquare.com/v2/users/self/checkins'
-			url += '?oauth_token='+secret.oauth_token+'&v='+time.strftime("%Y%m%d")
+			url += '?oauth_token='+self.oauth_token+'&v='+time.strftime("%Y%m%d")
 			url += '&offset='+str(offset)+'&limit=100'
 
 			print url
@@ -85,20 +88,37 @@ class Foursquare:
 
 			if offset >= count:
 				break
-
-		# print "\n\n\n\n\nENDED LIST\n\n\n\n\n"
-
 		return venues_list
 
-	def get_feature_vector():
-		return None
+    #returns index in weights/vector, augments weight
+	def add_to_feature_vector(self, category_key):
+       
+       if category_key not in self.feature_dict:
+           self.feature_dict[category_key] = len(self.feature_vector)
+           self.feature_vector.append(1)
+           self.feature_weights.append(0.0)
+           
+       self.feature_weights[self.feature_dict[category_key]] += 1.0 
 
-	def add_to_feature_vector():
-		return None
+       return self.feature_dict[category_key]
+        
+		
 
 
 fq = Foursquare()
 
-print fq.get_checkin_history()
+history = fq.get_checkin_history()
+for v in history:
+    popular = False
+    category = v['categories']['shortName']
+    print fq.add_to_feature_vector(category)
+
 
 # print html
+
+
+
+
+
+
+
