@@ -6,9 +6,11 @@ require 'json'
 get '/' do
 	cookie = nil
 	if cookie.nil?
-		redirect to('/login')
+		# redirect to('/login')
+		print request
 	end
-	'did not redirect'
+	# 'did not redirect'
+	request.inspect
 end
 
 get '/login' do
