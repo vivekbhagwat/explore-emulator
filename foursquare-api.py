@@ -12,7 +12,7 @@ class Foursquare:
 	"""docstring for Foursquare"""
 	def __init__(self):
 		# super(Foursquare, self).__init__()
-		self.feature_vector = np.array()
+		self.feature_vector = np.array([])
 		self.feature_dict = {}
 			
 
@@ -56,7 +56,7 @@ class Foursquare:
 		return venues
 
 
-	def get_checkin_history():
+	def get_checkin_history(self):
 		venues_list = []
 		offset = 0
 		count = 0
@@ -97,7 +97,7 @@ class Foursquare:
 		return None
 
 
-fq = Foursquare.__init__()
+fq = Foursquare()
 
 print fq.get_checkin_history()
 
