@@ -1,0 +1,12 @@
+!!!5
+
+%html
+	%head
+		%link(rel="stylesheet" type="text/css" href="main.css")
+		%title Explore.
+		/ make a post request to server
+		%script(type="text/javascript") navigator.geolocation.getCurrentPosition(GetLocation); function GetLocation(location) { alert(location.coords.latitude); alert(location.coords.longitude); alert(location.coords.accuracy); }
+	%body
+		%h1 Group Explore Emulator
+		#content
+			
