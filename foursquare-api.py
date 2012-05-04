@@ -11,7 +11,7 @@ class Foursquare:
         # super(Foursquare, self).__init__()
         self.feature_weights = [1.0]#np.array([1.0])
         self.feature_dict = {'popular' : 0}
-        self.oauth_token = secret.oauth_token
+        self.oauth_tokens = secret.oauth_tokens
 
         self.lat, self.lng = self.get_location()
         
@@ -32,7 +32,7 @@ class Foursquare:
         url += '?ll='+self.lat+','+self.lng
         #url += '&query='+query if query else ''
         url += '&limit=50'
-        url += '&oauth_token='+self.oauth_token+'&v=20120422'
+        url += '&oauth_token='+self.oauth_tokens[0]+'&v=20120422'
         # print url
         response = urllib2.urlopen(url)
         html = response.read()
@@ -61,33 +61,34 @@ class Foursquare:
     #train
     def get_checkin_history(self):
         venues_list = []
-        offset = 0
-        count = 0
 
-        while True:
-            url = 'https://api.foursquare.com/v2/users/self/checkins'
-            url += '?oauth_token='+self.oauth_token+'&v='+time.strftime("%Y%m%d")
-            url += '&offset='+str(offset)+'&limit=100'
+        for token in self.oauth_tokens:
+            offset = 0
+            count = 0
+            while True: 
+                url = 'https://api.foursquare.com/v2/users/self/checkins'
+                url += '?oauth_token='+token+'&v='+time.strftime("%Y%m%d")
+                url += '&offset='+str(offset)+'&limit=100'
 
-            print url
+                print url
 
-            response = urllib2.urlopen(url)
-            html = response.read()
+                response = urllib2.urlopen(url)
+                html = response.read()
 
-            json_response = json.loads(html)['response']
-            count = json_response['checkins']['count']
-            # print 'count = ', count
+                json_response = json.loads(html)['response']
+                count = json_response['checkins']['count']
+                # print 'count = ', count
 
-            venues = json_response['checkins']['items']
-            # print venues
-            # print len(venues)
+                venues = json_response['checkins']['items']
+                # print venues
+                # print len(venues)
 
-            venues_list.extend(venues)
+                venues_list.extend(venues)
 
-            offset += len(venues)
+                offset += len(venues)
 
-            if offset >= count:
-                break
+                if offset >= count:
+                    break 
         return venues_list
 
     #returns index in weights/vector, augments weight
@@ -113,6 +114,10 @@ class Foursquare:
 
 fq = Foursquare()
 
+
+#################################
+# TRAINING
+#################################
 history = fq.get_checkin_history()
 for v in history:
     categories = v['venue']['categories']
@@ -129,6 +134,11 @@ for v in history:
 print fq.feature_dict, "\n", fq.feature_weights
 print zip(fq.feature_weights, sorted(fq.feature_dict.iteritems(), key=operator.itemgetter(1)))
 
+
+
+################################
+# TESTING
+################################
 nearby = fq.get_venues_nearby()
 scores = [0]*len(nearby)
 scores = zip(scores, nearby)
@@ -152,7 +162,7 @@ for s,v in scores:
     s = np.dot(weights, vector)
     
     print s, ' ', v['name'], "\n", feature_vector
-    rankings.append((s, v['name']))
+    rankings.append((s, v['name'], [c['shortName'] for c in v['categories']]))
 
 print 's', sorted(rankings, key=operator.itemgetter(0), reverse=True)
 
