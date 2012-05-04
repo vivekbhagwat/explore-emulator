@@ -101,7 +101,14 @@ class Foursquare:
 
        return self.feature_dict[category_key]
         
-        
+#def DotProduct(list1, list2):
+#    summ = 0.0
+#    for i in range(len(list1)):
+#        summ += list1[i] * list2[i]
+#    return summ
+    
+#def DotProduct(list1, list2):
+#    return sum(ElementWiseMultiplication(list1, list2))        
 
 
 fq = Foursquare()
@@ -111,7 +118,7 @@ for v in history:
     categories = v['venue']['categories']
     
     for category in categories:
-        print fq.add_feature(category['shortName'])
+        fq.add_feature(category['shortName'])
 
         if v['venue']['stats']['checkinsCount'] > 200:
             fq.add_feature('popular') 
@@ -126,6 +133,8 @@ nearby = fq.get_venues_nearby()
 scores = [0]*len(nearby)
 scores = zip(scores, nearby)
 
+rankings = []
+
 for s,v in scores:
     feature_vector = [0]*len(fq.feature_weights)
     categories = v['categories']
@@ -137,11 +146,13 @@ for s,v in scores:
     if v['stats']['checkinsCount'] > 200:
         feature_vector[fq.feature_dict['popular']] = 1
 
-
     weights = np.array(fq.feature_weights)
     vector = np.array(feature_vector)
      
     s = np.dot(weights, vector)
     
     print s, ' ', v['name'], "\n", feature_vector
+    rankings.append((s, v['name']))
+
+print 's', sorted(rankings, key=operator.itemgetter(0), reverse=True)
 
