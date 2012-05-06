@@ -1,5 +1,4 @@
 \documentclass[11pt]{article}
-
 \setlength{\oddsidemargin}{0pt}
 \setlength{\textwidth}{470pt}
 % \usepackage{amssymb}
@@ -9,7 +8,7 @@
 % \usepackage{epsfig}
 \usepackage{listings}
 
-\title{Venue recommendations based on foursquare checkins for a group}
+\title{Group-based venue recommendations based on foursquare checkins}
 
 \author{Vivek Bhagwat\\
 {\tt vsb2110@columbia.edu}
@@ -28,7 +27,37 @@ these data are not necessarily hard to collect --- it simply requires all users 
 Once these data are acquired, similar techniques can be used to training on a group's data as an individual's.
 
 \section{Data}
-Foursquare has an easy-to-use API with 
+Foursquare has an easy-to-use API which allows access to what venues are nearby, checkin history, and information about those venues. 
+The data used for this recommendation engine included users' checkin history, information about the category or categories of the
+venues, how popular each venue is, and which venues are nearby.\\
+\\
+However, there exist certain key limitations to this recommendation system. Due to privacy concerns, foursquare does not provide access
+to the checkin history of friends. Without access to friends' checkin history, the amount of data
+on which a system can be trained is limited. This is a key advantage of foursquare's explore function --- which does have access to such
+data. Given access to this data, the recommendation engine could easily train on significantly more data, because the system would 
+essentially train on the extended circles of the group. Despite this, however, the group training does prove to take into account enough 
+data, provided all participants have checked in to many different types of venues --- so as to be able to provide data on any given
+query that is searched.\\
+\\
+Another limitation with the data is that foursquare data almost exclusively provides one category per venue. This severely limits the more
+granular information that exists about venues – such as what type of bar it might be, whether a restaurant is a casual one or not, and other
+pertinent information such as price range. Information like this might be scattered in tips for a venue, but the entity extraction involved 
+would render the system needlessly complex for very simple and very fast recommendations.\\
+\\
+Another limitation with the data is that evaluating metrics on the accuracy of the recomendations is not as simple as splitting the training
+data into a train/test split. This is because the amount an individual ``likes'' a venue is not available through data foursquare provides,
+except again through analysis of tips that user has left, which are often unreliable sources of information. As a result, it is difficult to
+evaluate whether a recommendation is a ``good'' recommendation or not. The metric of choice therefore becomes subjective, and based on 
+human prediction.
+
+\section{System}
+The foursquare venue data provides information about the location of the venue, the category or categories it falls under, and statistics
+about the number of checkins. For the limited purposes of this project, the OAuth token necessary to obtain data for each user was 
+obtained manually for each of the four users who gave permission to use their checkin data anonymously. Were this project to become 
+more of a product, this process would have to be automated (which is indeed possible, but unnecessary for these purposes).\\ 
+\\
+To train the system, the checkin history for each user is first downloaded. A feature vector and weights are then created, with a simple
+count of each category's $\tt{shortName}$ function defining the weights.
 
 
 
