@@ -1,0 +1,3 @@
+Evaluation of checkins are subjective. With a lack of copious amounts of checkin data
+
+Figure should be a bar graph based on the weights associated with each feature.
