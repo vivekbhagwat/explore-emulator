@@ -152,6 +152,7 @@ if __name__ == '__main__':
 #############################
 #GRAPHING
 #############################
-    plt.plot(fq.feature_weights)
+    #plt.plot(fq.feature_weights)
+	plt.bar(np.arange(len(fq.feature_weights)), fq.feature_weights, 0.15, color='r')
     plt.savefig('test.png')
 
