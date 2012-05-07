@@ -8,7 +8,8 @@
 % \usepackage{epsfig}
 \usepackage{listings}
 
-\title{Group-based venue recommendations based on foursquare checkins}
+%\title{Group-based venue recommendations based on foursquare checkins}
+\title{Foursquare-based venue recommendations for groups}
 
 \author{Vivek Bhagwat\\
 {\tt vsb2110@columbia.edu}
@@ -57,8 +58,30 @@ obtained manually for each of the four users who gave permission to use their ch
 more of a product, this process would have to be automated (which is indeed possible, but unnecessary for these purposes).\\ 
 \\
 To train the system, the checkin history for each user is first downloaded. A feature vector and weights are then created, with a simple
-count of each category's $\tt{shortName}$ function defining the weights.
+count of each category's $\tt{shortName}$ function defining the weights. The very simple concept of this system is that when a member
+of the group has checked in at a venue (e.g. a Chinese restaurant), that venue's category is weighted slightly more heavily. This works
+well for an individual, as it predicts venues based on what the user has claimed to be its preferences. For groups, similar concepts
+apply well. Similar interests are weighed more heavily, and heavy but outlying interests are diminished (this, of course, is another benefit
+to the group dynamic).\\
+\\
+Popularity is a more interesting feature in the recommendation system. In order to not weigh popularity too much, if a venue is not popular 
+that weight is discounted by a slightly larger amount. This naive normalization is likely the weakest point of this system, especially 
+in that over few checkins there is a large sensitivity to popularity. However, over the limited training which was performed 
+(due to a constrained amount of data available based on the privacy concerns mentioned above), this did not prove to be an issue. The weight
+on popularity was similar to a few other popular features.\\
+\\
+Once all are trained, the weight vector has been defined. The venues nearby are again acquired through use of foursquare's search API.
+The test phase is then simple --- the very sparse feature vector (out of approximately 100 features, only 2 or 3 are ever positive) 
+is then evaluated for each venue nearby. This is a very quick operation because it involves checking whether or not the venue is
+deemed ``popular'' (the system simply evaluates this to be true if there are more than 300 checkins at this venue) and to which 
+category or categories it belongs. The weights for each ``true'' feature are summed up for each venue, and ranked in descending order
+based on that sum to determine rank, using the following simple formula:\\
+\begin{equation}
+\sum_i{w_i \times f_i},
+\end{equation}
+\\where f is a feature vector of the venue being evaluated and w is the weights vector which has been trained.
 
+\section{Analysis}
 
 
 \end{document}
