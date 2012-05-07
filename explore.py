@@ -6,6 +6,8 @@ import numpy as np
 import operator
 import matplotlib.pyplot as plt
 
+POPULAR = 300
+
 class Foursquare:
     """docstring for Foursquare"""
     def __init__(self):
@@ -102,10 +104,10 @@ if __name__ == '__main__':
         for category in categories:
             fq.add_feature(category['shortName'])
 
-            if v['venue']['stats']['checkinsCount'] > 200:
+            if v['venue']['stats']['checkinsCount'] > POPULAR:
                 fq.add_feature('popular') 
             else:
-                fq.feature_weights[fq.feature_dict['popular']] -= 1.25
+                fq.feature_weights[fq.feature_dict['popular']] -= 4.5
        
 
     #print fq.feature_dict, "\n", fq.feature_weights
@@ -130,7 +132,7 @@ if __name__ == '__main__':
            if category['shortName'] in fq.feature_dict:
                feature_vector[fq.feature_dict[category['shortName']]] = 1
         
-        if v['stats']['checkinsCount'] > 200:
+        if v['stats']['checkinsCount'] > POPULAR:
             feature_vector[fq.feature_dict['popular']] = 1
 
         weights = np.array(fq.feature_weights)
@@ -152,7 +154,15 @@ if __name__ == '__main__':
 #############################
 #GRAPHING
 #############################
-    #plt.plot(fq.feature_weights)
-    plt.bar(np.arange(len(fq.feature_weights)), fq.feature_weights, 10, color='r')
-    plt.savefig('test.png')
-
+#    #plt.plot(fq.feature_weights)
+#    bars = fq.feature_weights
+#    labels = [l[0] for l in sorted(fq.feature_dict.iteritems(), key=operator.itemgetter(1))]
+#
+#    for i in range(0,len(bars),10):
+#        sub_bars = bars[i:i+10] if i+10 < len(bars) else bars[i:]
+#        sub_labels = labels[i:i+10] if i+10 < len(labels) else labels[i:]
+#        print (sub_bars, sub_labels)
+#        plt.bar(left=np.arange(len(fq.feature_weights)), height=sub_bars, width=1, color='r')
+#        plt.xticks(np.arange(len(fq.feature_weights)), sub_labels)
+#        plt.savefig('test'+str(i)+'.png')
+#    #plt.show()
