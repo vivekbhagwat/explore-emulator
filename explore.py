@@ -4,6 +4,7 @@ import secret
 import time
 import numpy as np
 import operator
+import matplotlib.pyplot as plt
 
 class Foursquare:
     """docstring for Foursquare"""
@@ -24,36 +25,20 @@ class Foursquare:
         return lat, lng
 
     def get_venues_nearby(self):
-        #query = raw_input('Would you like to look for something in particular? (if not just press enter) ')
+        query = raw_input('Would you like to look for something in particular? (if not just press enter) ')
 
         # print 'Getting ' + ((query + '-related ') if query else '') + 'venues near ' + lat + ', ' + lng + '...'
 
         url = 'https://api.foursquare.com/v2/venues/search'
         url += '?ll='+self.lat+','+self.lng
-        #url += '&query='+query if query else ''
-        url += '&limit=50'
+        url += '&query='+query if query else ''
+        url += '&limit=50&radius=800'
         url += '&oauth_token='+self.oauth_tokens[0]+'&v=20120422'
         # print url
         response = urllib2.urlopen(url)
         html = response.read()
 
         venues = json.loads(html)[u'response'][u'venues']
-        # print venues
-        # print len(venues)
-
-        # hereNow = venues[5][u'hereNow'][u'count']
-        # totalCheckins = venues[5][u'stats'][u'checkinsCount']
-        # categories = venues[5][u'categories']
-
-        # all_categories = []
-        # for v in venues:
-            # all_categories.append(len(v[u'categories']))
-
-
-        # print hereNow
-        # print totalCheckins
-        # print categories
-        # print all_categories
 
         return venues
 
@@ -70,7 +55,7 @@ class Foursquare:
                 url += '?oauth_token='+token+'&v='+time.strftime("%Y%m%d")
                 url += '&offset='+str(offset)+'&limit=100'
 
-                print url
+                #print url
 
                 response = urllib2.urlopen(url)
                 html = response.read()
@@ -102,67 +87,71 @@ class Foursquare:
 
        return self.feature_dict[category_key]
         
-#def DotProduct(list1, list2):
-#    summ = 0.0
-#    for i in range(len(list1)):
-#        summ += list1[i] * list2[i]
-#    return summ
-    
-#def DotProduct(list1, list2):
-#    return sum(ElementWiseMultiplication(list1, list2))        
 
-
-fq = Foursquare()
+if __name__ == '__main__':
+    fq = Foursquare()
 
 
 #################################
 # TRAINING
 #################################
-history = fq.get_checkin_history()
-for v in history:
-    categories = v['venue']['categories']
-    
-    for category in categories:
-        fq.add_feature(category['shortName'])
+    history = fq.get_checkin_history()
+    for v in history:
+        categories = v['venue']['categories']
+        
+        for category in categories:
+            fq.add_feature(category['shortName'])
 
-        if v['venue']['stats']['checkinsCount'] > 200:
-            fq.add_feature('popular') 
-        else:
-            fq.feature_weights[fq.feature_dict['popular']] -= 1.25
-   
+            if v['venue']['stats']['checkinsCount'] > 200:
+                fq.add_feature('popular') 
+            else:
+                fq.feature_weights[fq.feature_dict['popular']] -= 1.25
+       
 
-print fq.feature_dict, "\n", fq.feature_weights
-print zip(fq.feature_weights, sorted(fq.feature_dict.iteritems(), key=operator.itemgetter(1)))
+    #print fq.feature_dict, "\n", fq.feature_weights
+    #print zip(fq.feature_weights, sorted(fq.feature_dict.iteritems(), key=operator.itemgetter(1)))
 
 
 
 ################################
 # TESTING
 ################################
-nearby = fq.get_venues_nearby()
-scores = [0]*len(nearby)
-scores = zip(scores, nearby)
+    nearby = fq.get_venues_nearby()
+    scores = [0]*len(nearby)
+    scores = zip(scores, nearby)
 
-rankings = []
+    rankings = []
 
-for s,v in scores:
-    feature_vector = [0]*len(fq.feature_weights)
-    categories = v['categories']
+    for s,v in scores:
+        feature_vector = [0]*len(fq.feature_weights)
+        categories = v['categories']
 
-    for category in categories:
-       if category['shortName'] in fq.feature_dict:
-           feature_vector[fq.feature_dict[category['shortName']]] = 1
-    
-    if v['stats']['checkinsCount'] > 200:
-        feature_vector[fq.feature_dict['popular']] = 1
+        for category in categories:
+           if category['shortName'] in fq.feature_dict:
+               feature_vector[fq.feature_dict[category['shortName']]] = 1
+        
+        if v['stats']['checkinsCount'] > 200:
+            feature_vector[fq.feature_dict['popular']] = 1
 
-    weights = np.array(fq.feature_weights)
-    vector = np.array(feature_vector)
-     
-    s = np.dot(weights, vector)
-    
-    print s, ' ', v['name'], "\n", feature_vector
-    rankings.append((s, v['name'], [c['shortName'] for c in v['categories']]))
+        weights = np.array(fq.feature_weights)
+        vector = np.array(feature_vector)
+         
+        s = np.dot(weights, vector)
+        
+        #print s, ' ', v['name'], "\n", feature_vector
+        rankings.append((s, v['name'], [c['shortName'] for c in v['categories']], v['location']['address'] if 'address' in v['location'] else ''))
 
-print 's', sorted(rankings, key=operator.itemgetter(0), reverse=True)
+
+    sorted_rankings = sorted(rankings, key=operator.itemgetter(0), reverse=True)
+    i = 1
+    print "Ranking\tVenue Name\tAddress"
+    for rank, ven, cat, addr in sorted_rankings:
+       print i, "\t", ven, "\t", addr
+       i+=1
+
+#############################
+#GRAPHING
+#############################
+    plt.plot(fq.feature_weights)
+    plt.savefig('test.png')
 
